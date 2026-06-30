@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test-lint:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install lint tools
+        run: brew install swiftlint swiftformat
+
+      - name: SwiftFormat (check)
+        run: swiftformat --lint RBGApp/Sources tools
+
+      - name: SwiftLint
+        run: swiftlint lint --quiet
+
+      - name: Build
+        run: swift build --package-path RBGApp
+
+      - name: Test
+        run: swift test --package-path RBGApp

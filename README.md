@@ -1,5 +1,6 @@
 # Remove Background
 
+[![CI](https://github.com/emrikol/RemoveBackground/actions/workflows/ci.yml/badge.svg)](https://github.com/emrikol/RemoveBackground/actions/workflows/ci.yml)
 [![License: PolyForm Noncommercial 1.0.0](https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-D43C1E)](LICENSE)
 [![Use: Non-commercial](https://img.shields.io/badge/use-non--commercial-D43C1E)](LICENSE)
 [![Platform: macOS 14+](https://img.shields.io/badge/platform-macOS%2014%2B-555555)](#build)
