@@ -6,6 +6,13 @@ All notable changes to Remove Background are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-06-30
+
+### Fixed
+- Release builds now ship the **modern Liquid Glass (macOS 26) app icon**. The CI
+  runner uses an older `actool` that can't compile the Icon Composer `main.icon`, so the
+  pre-compiled icon is committed and bundled directly.
+
 ## [0.1.0] - 2026-06-30
 
 ### Added
