@@ -6,6 +6,14 @@ All notable changes to Remove Background are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-30
+
+### Security
+- Downloaded models are now pinned to immutable sources and **verified against a SHA-256
+  checksum** before use — a tampered or swapped model is rejected and discarded.
+- Hardened model-output handling: a model that misreports its output shape can no longer
+  trigger an out-of-bounds read or an oversized allocation.
+
 ## [0.1.2] - 2026-06-30
 
 ### Changed
