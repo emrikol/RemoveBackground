@@ -117,10 +117,10 @@
     <p class="sub">A native macOS app that cuts out subjects with state-of-the-art models —
       processed locally, in about a second. No upload, no watermark, no sign-up.</p>
     <div class="cta">
-      <a class="btn btn-primary" href="https://github.com/emrikol/RemoveBackground/releases/latest">Download for macOS →</a>
+      <a class="btn btn-primary" href="https://github.com/emrikol/RemoveBackground/releases/latest/download/RemoveBackground.dmg">Download for macOS →</a>
       <a class="btn btn-ghost" href="#get">Build from source</a>
     </div>
-    <div class="note">Free for non-commercial use · macOS 14+ · Apple silicon · provided as-is, no warranty</div>
+    <div class="note"><a id="latest" href="https://github.com/emrikol/RemoveBackground/releases/latest">Latest release</a> · free for non-commercial use · macOS 14+ · Apple silicon · provided as-is</div>
     <div class="shot"><img src="assets/result.png" alt="Remove Background app showing a before/after wipe of a parrot, background removed onto transparency"></div>
   </header>
 
@@ -129,7 +129,7 @@
     <div class="h2">Studio-grade cut-outs, nothing leaves your Mac.</div>
     <div class="grid">
       <div class="feat"><div class="ic">🔒</div><h3>On-device &amp; private</h3>
-        <p>Every pixel is processed locally with Core ML / ONNX. Nothing is uploaded, nothing is logged — the app even ships with no model files, fetching them once on first use.</p></div>
+        <p>Every pixel is processed locally with Core ML / ONNX — your images never leave your Mac, and nothing is logged. The app ships with no model files; the only network use is fetching them once and checking for updates (which sends just the app/macOS version and CPU type).</p></div>
       <div class="feat"><div class="ic">✦</div><h3>Five models, your call</h3>
         <p>RMBG-2.0, BiRefNet (full · lite · portrait), and a soft-alpha matting model. Pick raw speed or the finest hair-, fur-, and feather-level edges.</p></div>
       <div class="feat"><div class="ic">⇄</div><h3>Compare &amp; restyle</h3>
@@ -182,5 +182,15 @@ cd RemoveBackground/RBGApp
   </div>
 </footer>
 
+<script>
+  // Show the current version (written to version.json by the release CI — same origin).
+  fetch('version.json').then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) {
+      if (d && d.version) {
+        var e = document.getElementById('latest');
+        if (e) { e.textContent = d.version + ' — latest release'; }
+      }
+    }).catch(function () {});
+</script>
 </body>
 </html>
