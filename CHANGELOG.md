@@ -6,6 +6,13 @@ All notable changes to Remove Background are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-06-30
+
+### Changed
+- The app now **checks for updates automatically** in the background and prompts when a
+  new version is available (previously manual-only). It sends only the app version, macOS
+  version, and CPU architecture when checking — nothing else.
+
 ## [0.1.1] - 2026-06-30
 
 ### Fixed
