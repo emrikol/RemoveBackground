@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Dark-appearance checkerboard: swap this in for Layer 2 in the icon's
+       Dark variant so the transparency grid reads dark (matches the app's
+       dark-mode checkerboard) instead of glowing white. -->
+  <defs>
+    <pattern id="checkerDark" width="82" height="82" patternUnits="userSpaceOnUse">
+      <rect width="82" height="82" fill="#2A2A2E"/>
+      <rect x="0" y="0" width="41" height="41" fill="#1E1E22"/>
+      <rect x="41" y="41" width="41" height="41" fill="#1E1E22"/>
+    </pattern>
+  </defs>
+  <rect x="512" y="0" width="512" height="1024" fill="url(#checkerDark)"/>
+</svg>

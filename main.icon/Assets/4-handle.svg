@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Layer 4 (top): the wipe handle — the natural "glass" foreground element.
+       In Icon Composer, give this layer the specular / depth treatment so it
+       catches light and floats above the split. -->
+  <circle cx="512" cy="512" r="75" fill="#FFFFFF"/>
+  <g fill="none" stroke="#CC3819" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="478" y1="512" x2="546" y2="512"/>
+    <polyline points="494,496 478,512 494,528"/>
+    <polyline points="530,496 546,512 530,528"/>
+  </g>
+</svg>

@@ -1,0 +1,70 @@
+# SwiftLint configuration for Remove Background
+# Adapted from TwinKley, with length thresholds tuned to this app's UI-heavy,
+# single-file ContentView (a split is a tracked future improvement, not a blocker).
+
+included:
+  - RBGApp/Sources   # app code only; tools/ are throwaway dev scripts
+
+excluded:
+  - .build
+  - RBGApp/.build
+  - RBGApp/Package.swift
+
+disabled_rules:
+  - trailing_whitespace                    # handled by SwiftFormat
+  - line_length                            # this app uses long, readable SwiftUI modifier chains
+  - opening_brace                          # conflicts with SwiftFormat
+  - todo                                   # we keep intentional TODO/notes
+  - multiple_closures_with_trailing_closure # idiomatic SwiftUI (Button {} label: {})
+  - trailing_comma                         # we keep trailing commas; SwiftFormat owns commas
+  - statement_position                     # else/catch placement is owned by SwiftFormat
+
+opt_in_rules:
+  - empty_count
+  - empty_string
+  - empty_collection_literal
+  - first_where
+  - last_where
+  - contains_over_filter_count
+  - contains_over_filter_is_empty
+  - contains_over_first_not_nil
+  - closure_spacing
+  - collection_alignment
+  - modifier_order
+  - redundant_nil_coalescing
+  - toggle_bool
+  - sorted_imports
+  - fatal_error_message
+  - operator_usage_whitespace
+  - prefer_zero_over_explicit_init
+  - unneeded_parentheses_in_closure_argument
+  - vertical_whitespace_closing_braces
+
+# Tuned thresholds (warn as a nudge; don't error on current code)
+file_length:
+  warning: 1000      # ContentView is ~1030 — warns to encourage a split
+  error: 1500
+
+type_body_length:
+  warning: 500
+  error: 1000
+
+function_body_length:
+  warning: 80
+  error: 160
+
+cyclomatic_complexity:
+  warning: 15
+  error: 25
+
+identifier_name:
+  min_length:
+    warning: 2
+    error: 1
+  excluded: [id, i, j, x, y, r, c, g, b, d, e, n, p, u, t, a, f, h, m, s, v, w]
+
+type_name:
+  min_length: 2
+  max_length: 50
+
+reporter: "xcode"

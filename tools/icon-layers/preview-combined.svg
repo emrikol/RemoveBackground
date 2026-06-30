@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- PREVIEW ONLY (rounded-tile clip approximates the macOS mask). The real
+       layers are the 4 numbered SVGs; Icon Composer applies the actual shape. -->
+  <defs>
+    <linearGradient id="persimmon" x1="0" y1="0" x2="0" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF704D"/><stop offset="1" stop-color="#CC3819"/>
+    </linearGradient>
+    <pattern id="checker" width="82" height="82" patternUnits="userSpaceOnUse">
+      <rect width="82" height="82" fill="#FFFFFF"/>
+      <rect width="41" height="41" fill="#E7E7E7"/>
+      <rect x="41" y="41" width="41" height="41" fill="#E7E7E7"/>
+    </pattern>
+    <clipPath id="tile"><rect x="100" y="100" width="824" height="824" rx="185" ry="185"/></clipPath>
+  </defs>
+  <g clip-path="url(#tile)">
+    <rect width="1024" height="1024" fill="url(#persimmon)"/>
+    <rect x="512" width="512" height="1024" fill="url(#checker)"/>
+    <rect x="509.5" width="5" height="1024" fill="#FFFFFF"/>
+  </g>
+  <circle cx="512" cy="512" r="75" fill="#FFFFFF"/>
+  <g fill="none" stroke="#CC3819" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="478" y1="512" x2="546" y2="512"/>
+    <polyline points="494,496 478,512 494,528"/>
+    <polyline points="530,496 546,512 530,528"/>
+  </g>
+</svg>

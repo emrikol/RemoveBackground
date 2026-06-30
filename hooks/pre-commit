@@ -1,0 +1,33 @@
+#!/bin/bash
+# Pre-commit: enforce SwiftFormat + SwiftLint on the app sources.
+# Install with: ./scripts/install-hooks.sh
+set -e
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+# Only run when Swift files are staged.
+if ! git diff --cached --name-only --diff-filter=ACM | grep -q '\.swift$'; then
+    exit 0
+fi
+
+if command -v swiftformat >/dev/null 2>&1; then
+    if ! swiftformat --lint RBGApp/Sources tools >/dev/null 2>&1; then
+        echo "❌ SwiftFormat: sources need formatting."
+        echo "   Run: swiftformat RBGApp/Sources tools"
+        exit 1
+    fi
+else
+    echo "⚠️  swiftformat not installed — skipping format check (brew install swiftformat)"
+fi
+
+if command -v swiftlint >/dev/null 2>&1; then
+    if swiftlint lint --quiet 2>/dev/null | grep -q ' error:'; then
+        echo "❌ SwiftLint reported errors:"
+        swiftlint lint --quiet | grep ' error:'
+        exit 1
+    fi
+else
+    echo "⚠️  swiftlint not installed — skipping lint (brew install swiftlint)"
+fi
+
+exit 0

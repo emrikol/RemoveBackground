@@ -1,0 +1,20 @@
+.build/
+build/
+export-venv/
+.ruff_cache/
+Models/
+samples/
+*.png
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Secrets / signing material — never commit
+*.pem
+*.p12
+*.key
+.env
+.env.*
+sparkle_private_key*
+*_private_key*

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Layer 2: the transparency checkerboard on the right half (the "removed" side).
+       Left half is transparent so the persimmon layer below shows through. -->
+  <defs>
+    <pattern id="checker" width="82" height="82" patternUnits="userSpaceOnUse">
+      <rect width="82" height="82" fill="#FFFFFF"/>
+      <rect x="0" y="0" width="41" height="41" fill="#E7E7E7"/>
+      <rect x="41" y="41" width="41" height="41" fill="#E7E7E7"/>
+    </pattern>
+  </defs>
+  <rect x="512" y="0" width="512" height="1024" fill="url(#checker)"/>
+</svg>

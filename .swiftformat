@@ -1,0 +1,76 @@
+# SwiftFormat configuration for Remove Background
+# Adapted from TwinKley, but using 4-space indentation (this project's existing style),
+# not tabs, to avoid a large reformat.
+
+# File options
+--exclude .build,**/.build,Package.swift,RBGApp/Package.swift,Packages/TwinKleyCore/Package.swift
+
+# Format options
+--indent 4
+--xcodeindentation enabled
+--wrapconditions disabled
+--indentcase false
+--trimwhitespace always
+--voidtype void
+--nospaceoperators ..<,...
+--ifdef no-indent
+--stripunusedargs closure-only
+--maxwidth none
+--wraparguments disabled
+--wrapparameters disabled
+--wrapcollections disabled
+--closingparen balanced
+--funcattributes prev-line
+--typeattributes prev-line
+--varattributes same-line
+--self remove
+--importgrouping alpha
+--commas inline
+--semicolons never
+--operatorfunc spaced
+--ranges spaced
+--patternlet hoist
+--redundanttype infer-locals-only
+--header ignore
+--swiftversion 5.9
+
+# Rules to enable
+--enable blankLinesBetweenScopes
+--enable blankLinesAtStartOfScope
+--enable blankLinesAtEndOfScope
+--enable consecutiveSpaces
+--enable duplicateImports
+--enable elseOnSameLine
+--enable emptyBraces
+--enable redundantBackticks
+--enable redundantGet
+--enable redundantInit
+--enable redundantLet
+--enable redundantNilInit
+--enable redundantParens
+--enable redundantSelf
+--enable sortImports
+--enable spaceAroundBraces
+--enable spaceAroundBrackets
+--enable spaceAroundOperators
+--enable spaceInsideBraces
+--enable spaceInsideBrackets
+--enable trailingSpace
+--enable typeSugar
+--enable void
+
+# Rules to disable — preserve this project's intentional compact style
+# (semicolon-joined related assignments, one-line guards) rather than reformat it.
+--disable wrap
+--disable wrapArguments
+--disable wrapAttributes
+--disable wrapMultilineStatementBraces
+--disable trailingCommas
+--disable acronyms
+--disable organizeDeclarations
+--disable extensionAccessControl
+--disable semicolons
+--disable redundantReturn
+--disable braces
+--disable indent
+--disable andOperator
