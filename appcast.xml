@@ -2,6 +2,15 @@
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
     <channel>
         <item>
+            <title>0.1.2</title>
+            <pubDate>Tue, 30 Jun 2026 21:48:01 +0000</pubDate>
+            <sparkle:version>0.1.2</sparkle:version>
+            <sparkle:shortVersionString>0.1.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <enclosure url="https://github.com/emrikol/RemoveBackground/releases/download/v0.1.2/RemoveBackground.zip" length="11386577" type="application/octet-stream" sparkle:edSignature="8pCfDaIcdt+p5pzIhrEbIGX4jOc3ocdPnsaPV8em5Cc6MIHdham5kJhFkY19OKIeHAc2jruuvfozU3Xxuwp+Cw=="/>
+        </item>
+        <item>
             <title>0.1.1</title>
             <pubDate>Tue, 30 Jun 2026 21:39:54 +0000</pubDate>
             <sparkle:version>0.1.1</sparkle:version>
