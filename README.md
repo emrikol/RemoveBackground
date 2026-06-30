@@ -12,8 +12,10 @@ with a before/after wipe, a background studio, zoom-to-inspect, and batch proces
 ![Remove Background — a parrot with its background removed, shown in the app's before/after wipe](docs/screenshot.png)
 
 - **Models:** RMBG-2.0 (Core ML, default), BiRefNet / -lite / -portrait, BiRefNet-matting (ONNX)
-- **Private:** all inference is local; models download once and cache under
-  `~/Library/Application Support/RemoveBackground/`
+- **Private:** all image processing is local — your images never leave your Mac, and
+  nothing is logged. The only network use is one-time model downloads (cached under
+  `~/Library/Application Support/RemoveBackground/`) and Sparkle update checks, which send
+  just the app version, macOS version, and CPU architecture.
 - **No bundled weights:** the app ships with *no* model files — each is fetched at
   runtime from its own host the first time you use it.
 

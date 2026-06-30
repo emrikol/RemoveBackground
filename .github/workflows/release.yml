@@ -96,8 +96,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Stage Pages content (appcast)
-        run: mkdir -p gh-pages-out && cp appcast.xml gh-pages-out/
+      - name: Stage Pages content (appcast + version)
+        run: |
+          mkdir -p gh-pages-out
+          cp appcast.xml gh-pages-out/
+          printf '{"version":"%s"}\n' "${{ steps.version.outputs.tag }}" > gh-pages-out/version.json
 
       - name: Publish appcast to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
