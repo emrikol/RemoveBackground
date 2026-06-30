@@ -1,0 +1,114 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version
+        id: version
+        run: |
+          echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+          echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up signing keychain
+        env:
+          SIGNING_CERTIFICATE: ${{ secrets.SIGNING_CERTIFICATE }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security set-keychain-settings -t 3600 -u build.keychain
+          echo "$SIGNING_CERTIFICATE" | base64 --decode > cert.p12
+          security import cert.p12 -k build.keychain -P "$SIGNING_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" build.keychain
+          rm -f cert.p12
+
+      - name: Store notarization credentials
+        env:
+          NOTARIZATION_APPLE_ID: ${{ secrets.NOTARIZATION_APPLE_ID }}
+          NOTARIZATION_TEAM_ID: ${{ secrets.NOTARIZATION_TEAM_ID }}
+          NOTARIZATION_PASSWORD: ${{ secrets.NOTARIZATION_PASSWORD }}
+        run: |
+          xcrun notarytool store-credentials "notarytool" \
+            --apple-id "$NOTARIZATION_APPLE_ID" \
+            --team-id "$NOTARIZATION_TEAM_ID" \
+            --password "$NOTARIZATION_PASSWORD"
+
+      - name: Build, sign & notarize
+        run: VERSION="${{ steps.version.outputs.version }}" ./RBGApp/build_app.sh --release --notarize
+
+      - name: Package ZIP (Sparkle) + DMG (download)
+        run: |
+          APP="$HOME/Applications/RemoveBackground.app"
+          ditto -c -k --keepParent "$APP" RemoveBackground.zip
+          mkdir -p dmg-temp && cp -R "$APP" dmg-temp/ && ln -s /Applications dmg-temp/Applications
+          hdiutil create -volname "Remove Background" -srcfolder dmg-temp -ov -format UDZO RemoveBackground.dmg
+          rm -rf dmg-temp
+
+      - name: Sign update + generate appcast
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          BIN="RBGApp/.build/artifacts/sparkle/Sparkle/bin"
+          mkdir -p releases && cp RemoveBackground.zip releases/
+          echo "$SPARKLE_PRIVATE_KEY" | "$BIN/generate_appcast" \
+            --download-url-prefix "https://github.com/emrikol/RemoveBackground/releases/download/${{ steps.version.outputs.tag }}/" \
+            --ed-key-file - releases/
+          # Merge the new <item> into any existing appcast already on Pages.
+          if curl -f -s -o old.xml https://emrikol.github.io/RemoveBackground/appcast.xml; then
+            sed -n '/<item>/,/<\/item>/p' releases/appcast.xml > new-item.xml
+            sed -n '1,/<channel>/p' old.xml > appcast.xml
+            cat new-item.xml >> appcast.xml
+            sed -n '/<channel>/,$p' old.xml | tail -n +2 >> appcast.xml
+          else
+            mv releases/appcast.xml appcast.xml
+          fi
+          rm -rf releases old.xml new-item.xml
+
+      - name: Release notes from CHANGELOG
+        id: notes
+        run: |
+          VER="${{ steps.version.outputs.version }}"
+          awk "/## \[$VER\]/{f=1;next} /## \[/{f=0} f" CHANGELOG.md > notes.md
+          [ -s notes.md ] || echo "Release $VER" > notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            RemoveBackground.dmg
+            RemoveBackground.zip
+            appcast.xml
+          body_path: notes.md
+          prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'alpha') || contains(github.ref, 'rc') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Stage Pages content (appcast)
+        run: mkdir -p gh-pages-out && cp appcast.xml gh-pages-out/
+
+      - name: Publish appcast to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./gh-pages-out
+          keep_files: true
+          publish_branch: gh-pages
+          enable_jekyll: false
+          commit_message: 'Update appcast for ${{ steps.version.outputs.tag }}'
+
+      - name: Clean up keychain
+        if: always()
+        run: security delete-keychain build.keychain || true

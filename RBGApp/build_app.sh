@@ -27,6 +27,10 @@ done
 SIGN_IDENTITY="${SIGN_IDENTITY:-$(security find-identity -v -p codesigning 2>/dev/null \
   | grep "Developer ID Application" | head -1 | sed -E 's/.*"(.*)".*/\1/')}"
 
+# Version for both Info.plist keys. CI passes the release tag (e.g. VERSION=2.0.1).
+# Sparkle compares CFBundleVersion, so it must increase every release.
+VERSION="${VERSION:-2.0.0}"
+
 APP="RemoveBackground"
 STAGE="build/$APP.app"
 MACOS="$STAGE/Contents/MacOS"
@@ -76,8 +80,8 @@ cat > "$STAGE/Contents/Info.plist" <<PLIST
   <key>CFBundleIdentifier</key><string>com.emrikol.removebackground</string>
   <key>CFBundleExecutable</key><string>$APP</string>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleShortVersionString</key><string>2.0</string>
-  <key>CFBundleVersion</key><string>2</string>
+  <key>CFBundleShortVersionString</key><string>$VERSION</string>
+  <key>CFBundleVersion</key><string>$VERSION</string>
   <key>LSMinimumSystemVersion</key><string>14.0</string>
   <key>NSHighResolutionCapable</key><true/>
   <key>LSApplicationCategoryType</key><string>public.app-category.photography</string>
