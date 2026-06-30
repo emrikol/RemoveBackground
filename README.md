@@ -61,3 +61,28 @@ ONNX Runtime (no models), so you never redistribute a restricted model. Checklis
 - [ ] **Notarize for public release** — the default build is ad-hoc signed, so Gatekeeper
       warns. For a real public download, sign with an Apple **Developer ID** and notarize.
 - [ ] **No models bundled** — keep it that way; models stay runtime-downloaded.
+
+## Support Policy
+
+**This software is provided as-is, with no support.**
+
+- ✅ You may use, modify, and redistribute it **for any non-commercial purpose** under
+  the [PolyForm Noncommercial 1.0.0](LICENSE) license.
+- ❌ **No support, bug fixes, or feature requests.**
+- ❌ **Issues are disabled** — please don't contact the maintainer for help.
+- ❌ **Pull requests are accepted only from collaborators** — others are auto-closed.
+- 💡 **To change it, fork it** (non-commercially) and adapt it to your needs.
+
+### Why this policy?
+
+Remove Background is a personal, non-commercial project. It depends on third-party ML
+models (RMBG-2.0, BiRefNet) that can change upstream, and it's tuned for current Apple
+Silicon + macOS — supporting every hardware/OS combination is beyond its scope.
+
+**If it works for you: great. If not: please fork it and adapt it.**
+
+### For forkers
+
+- Use a **different project name and branding** to avoid confusion.
+- You must comply with the **PolyForm Noncommercial** terms (non-commercial use only).
+- Mind the model licenses too — the default RMBG-2.0 model is **CC BY-NC 4.0**.
