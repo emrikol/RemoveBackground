@@ -14,8 +14,11 @@ final class UpdaterViewModel: ObservableObject {
     let controller: SPUStandardUpdaterController
 
     init() {
+        // The debug self-test harness (RBG_HEADLESS) runs without a real UI; don't start the
+        // auto-updater there — it can't initialize and would surface a confusing error dialog.
+        let headless = ProcessInfo.processInfo.environment["RBG_HEADLESS"] != nil
         controller = SPUStandardUpdaterController(
-            startingUpdater: true,
+            startingUpdater: !headless,
             updaterDelegate: SparkleErrorLogger.shared,
             userDriverDelegate: nil
         )
