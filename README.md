@@ -8,6 +8,8 @@ A native macOS app that removes image backgrounds **entirely on-device** — not
 ever leaves your Mac. Drop an image (or many), pick a model, and get a clean cut-out
 with a before/after wipe, a background studio, zoom-to-inspect, and batch processing.
 
+![Remove Background — a parrot with its background removed, shown in the app's before/after wipe](docs/screenshot.png)
+
 - **Models:** RMBG-2.0 (Core ML, default), BiRefNet / -lite / -portrait, BiRefNet-matting (ONNX)
 - **Private:** all inference is local; models download once and cache under
   `~/Library/Application Support/RemoveBackground/`

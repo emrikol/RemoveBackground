@@ -5,6 +5,8 @@ export-venv/
 Models/
 samples/
 *.png
+# …but keep README/docs screenshots
+!docs/*.png
 
 # macOS
 .DS_Store
