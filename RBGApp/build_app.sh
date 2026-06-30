@@ -53,18 +53,16 @@ else
   echo "   ⚠ .build/release/Sparkle.framework not found — auto-update unavailable"
 fi
 
-# App icon: compile the Icon Composer document (Liquid Glass) with actool →
-# Assets.car (modern) + main.icns (legacy fallback). Skipped gracefully if absent.
-ICON="../main.icon"
-if [ -d "$ICON" ] && xcrun --find actool >/dev/null 2>&1; then
-  echo "→ compiling app icon (main.icon → Liquid Glass + .icns fallback)…"
-  xcrun actool "$ICON" --compile "$RES" --app-icon main \
-    --output-partial-info-plist "build/icon-partial.plist" \
-    --platform macosx --minimum-deployment-target 26.0 --target-device mac \
-    --output-format human-readable-text >/dev/null 2>&1 \
-    || echo "   (icon compile failed; continuing without a custom icon)"
+# App icon: the modern Liquid Glass (macOS 26) icon, pre-compiled from main.icon with
+# Xcode 26's actool and committed under AppIcon/. CI runners ship an older actool that
+# can't compile the Icon Composer format, so we ship the prebuilt asset catalog directly.
+# Regenerate after changing main.icon with: tools/compile-icon.sh
+if [ -f AppIcon/Assets.car ]; then
+  echo "→ app icon (Liquid Glass, prebuilt)…"
+  cp AppIcon/Assets.car "$RES/Assets.car"
+  [ -f AppIcon/main.icns ] && cp AppIcon/main.icns "$RES/main.icns"
 else
-  echo "→ (no ../main.icon or actool; building without a custom icon)"
+  echo "→ ⚠ AppIcon/Assets.car missing — run tools/compile-icon.sh (needs Xcode 26), then commit"
 fi
 
 # No models are bundled. Every model — including the default RMBG-2.0 — is downloaded
