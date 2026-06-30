@@ -1,8 +1,178 @@
 <!doctype html>
+<html lang="en">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Remove Background</title>
-<h1>Remove Background</h1>
-<p>A native macOS background remover — fully on-device, no models bundled.</p>
-<p><a href="https://github.com/emrikol/RemoveBackground">Source on GitHub</a> · non-commercial (PolyForm Noncommercial 1.0.0)</p>
-<p>This page also hosts the Sparkle <a href="appcast.xml">appcast</a> for in-app auto-updates.</p>
+<title>Remove Background — on-device background removal for macOS</title>
+<meta name="description" content="A native macOS app that removes image backgrounds entirely on-device. Five state-of-the-art models, a before/after wipe, batch processing. Free, non-commercial, open source.">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<meta property="og:title" content="Remove Background for macOS">
+<meta property="og:description" content="Cut out subjects with state-of-the-art models — fully on your Mac. No upload, no account.">
+<meta property="og:image" content="assets/result.png">
+<style>
+  :root{
+    --bg:#141417; --panel:#1c1c21; --card:#212127; --line:rgba(255,255,255,.10);
+    --ink:#f3f2ef; --ink2:#a6a6ad; --coral:#ff6f5c; --persimmon:#cc381c; --green:#66cc8e;
+    --serif:ui-serif,"New York",Georgia,"Times New Roman",serif;
+    --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;
+    -webkit-font-smoothing:antialiased;overflow-x:hidden}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  .serif{font-family:var(--serif)}
+  .coral{color:var(--coral)}
+
+  /* nav */
+  nav{display:flex;align-items:center;justify-content:space-between;padding:22px 0}
+  .brand{display:flex;align-items:center;gap:12px;font-family:var(--serif);font-weight:700;font-size:20px;letter-spacing:.2px}
+  .brand img{width:32px;height:32px;border-radius:8px}
+  .nav-links{display:flex;gap:22px;align-items:center;color:var(--ink2);font-size:15px}
+  .nav-links a:hover{color:var(--ink)}
+
+  /* hero */
+  .hero{text-align:center;padding:48px 0 8px;position:relative}
+  .hero::before{content:"";position:absolute;inset:-10% 0 auto;height:520px;z-index:-1;
+    background:radial-gradient(60% 80% at 50% 0,rgba(204,56,28,.22),transparent 70%)}
+  .chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);
+    border-radius:999px;padding:6px 14px;font-size:13px;color:var(--ink2);margin-bottom:22px}
+  .chip .dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+  h1{font-family:var(--serif);font-weight:700;font-size:clamp(38px,6vw,68px);line-height:1.05;
+    letter-spacing:-.5px;margin-bottom:18px}
+  .sub{font-size:clamp(17px,2.2vw,20px);color:var(--ink2);max-width:620px;margin:0 auto 30px}
+  .cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
+  .btn{display:inline-flex;align-items:center;gap:9px;border-radius:12px;padding:13px 22px;
+    font-size:16px;font-weight:600;border:1px solid transparent;transition:.15s}
+  .btn-primary{background:var(--persimmon);color:#fff}
+  .btn-primary:hover{background:#e0401f;transform:translateY(-1px)}
+  .btn-ghost{border-color:var(--line);color:var(--ink)}
+  .btn-ghost:hover{border-color:rgba(255,255,255,.28)}
+  .note{color:var(--ink2);font-size:14px;margin-top:14px}
+
+  /* shot */
+  .shot{margin:46px auto 0;max-width:980px}
+  .shot img{width:100%;height:auto;border-radius:16px;
+    box-shadow:0 40px 90px -30px rgba(0,0,0,.8),0 0 0 1px var(--line)}
+
+  /* features */
+  section{padding:88px 0}
+  .eyebrow{text-transform:uppercase;letter-spacing:2px;font-size:12.5px;color:var(--coral);
+    font-weight:600;margin-bottom:12px}
+  .h2{font-family:var(--serif);font-size:clamp(28px,4vw,40px);letter-spacing:-.3px;line-height:1.1}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:40px}
+  .feat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px}
+  .feat .ic{font-size:22px;width:46px;height:46px;border-radius:12px;display:grid;place-items:center;
+    background:rgba(255,111,92,.12);border:1px solid rgba(255,111,92,.22);margin-bottom:16px}
+  .feat h3{font-size:18px;margin-bottom:7px}
+  .feat p{color:var(--ink2);font-size:15px}
+
+  /* showcase */
+  .showcase{display:grid;grid-template-columns:1.1fr 1fr;gap:48px;align-items:center}
+  .checker{border-radius:18px;padding:28px;border:1px solid var(--line);
+    background-color:#1a1a1e;
+    background-image:conic-gradient(#26262c 25%,transparent 0 50%,#26262c 0 75%,transparent 0);
+    background-size:26px 26px}
+  .checker img{width:100%;height:auto;display:block;filter:drop-shadow(0 18px 40px rgba(0,0,0,.5))}
+  .showcase p{color:var(--ink2);margin-top:14px;font-size:16px}
+
+  /* get */
+  .get{text-align:center}
+  pre{display:inline-block;text-align:left;background:#0e0e10;border:1px solid var(--line);
+    border-radius:12px;padding:18px 22px;margin:26px 0 8px;font-size:14px;color:#d6d6d6;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;overflow-x:auto;max-width:100%}
+  pre .c{color:#7d7d85}
+
+  /* footer */
+  footer{border-top:1px solid var(--line);padding:40px 0;color:var(--ink2);font-size:14px}
+  .foot{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:center}
+  .foot a{color:var(--ink2)}.foot a:hover{color:var(--ink)}
+  .lic{display:inline-block;border:1px solid var(--line);border-radius:8px;padding:3px 10px;font-size:12.5px}
+
+  @media(max-width:760px){
+    section{padding:64px 0}
+    .grid,.showcase{grid-template-columns:1fr}
+    .nav-links a:not(.btn){display:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav>
+    <a class="brand" href="#"><img src="assets/icon.png" alt="">Remove Background</a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#get">Get it</a>
+      <a class="btn btn-ghost" href="https://github.com/emrikol/RemoveBackground">GitHub</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <span class="chip"><span class="dot"></span>on-device · private · no account</span>
+    <h1>Backgrounds, gone.<br>Entirely on your <span class="coral">Mac</span>.</h1>
+    <p class="sub">A native macOS app that cuts out subjects with state-of-the-art models —
+      processed locally, in about a second. No upload, no watermark, no sign-up.</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="https://github.com/emrikol/RemoveBackground">Get it on GitHub →</a>
+      <a class="btn btn-ghost" href="#get">Build from source</a>
+    </div>
+    <div class="note">Free for non-commercial use · macOS 14+ · Apple silicon</div>
+    <div class="shot"><img src="assets/result.png" alt="Remove Background app showing a before/after wipe of a parrot, background removed onto transparency"></div>
+  </header>
+
+  <section id="features">
+    <div class="eyebrow">Why it’s nice</div>
+    <div class="h2">Studio-grade cut-outs, nothing leaves your Mac.</div>
+    <div class="grid">
+      <div class="feat"><div class="ic">🔒</div><h3>On-device &amp; private</h3>
+        <p>Every pixel is processed locally with Core ML / ONNX. Nothing is uploaded, nothing is logged — the app even ships with no model files, fetching them once on first use.</p></div>
+      <div class="feat"><div class="ic">✦</div><h3>Five models, your call</h3>
+        <p>RMBG-2.0, BiRefNet (full · lite · portrait), and a soft-alpha matting model. Pick raw speed or the finest hair-, fur-, and feather-level edges.</p></div>
+      <div class="feat"><div class="ic">⇄</div><h3>Compare &amp; restyle</h3>
+        <p>A before/after wipe to inspect the cut up close, zoom to check the edges, then drop it on any color — or keep it transparent and drag it straight out.</p></div>
+      <div class="feat"><div class="ic">▦</div><h3>Batch in one go</h3>
+        <p>Drop a whole folder of images, process them all with one click, and export the cut-outs together.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="showcase">
+      <div class="checker"><img src="assets/parrot.png" alt="A parrot cut out onto transparency, feather edges intact"></div>
+      <div>
+        <div class="eyebrow">The hard part, handled</div>
+        <div class="h2">Hair, fur, feathers — the edges hold up.</div>
+        <p>Soft-alpha matting keeps the wispy detail most tools smear away. Inspect it at 100%, then export a clean PNG with real transparency.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="get" class="get">
+    <div class="eyebrow">Get it</div>
+    <div class="h2">Clone, build, done.</div>
+    <pre><span class="c"># macOS 14+ with Xcode command-line tools</span>
+git clone https://github.com/emrikol/RemoveBackground
+cd RemoveBackground/RBGApp
+./build_app.sh   <span class="c"># builds &amp; installs to ~/Applications</span></pre>
+    <div class="note">No model files to download manually — the app fetches them on first use.</div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrap foot">
+    <div>
+      <span class="lic">PolyForm Noncommercial 1.0.0</span>
+      &nbsp; Free for any non-commercial use · built on-device · no analytics.
+    </div>
+    <div>
+      <a href="https://github.com/emrikol/RemoveBackground">Source</a> &nbsp;·&nbsp;
+      <a href="https://github.com/emrikol/RemoveBackground/blob/main/LICENSE">License</a> &nbsp;·&nbsp;
+      <a href="https://www.flickr.com/photos/29507259@N02/3573755676">Demo parrot (CC0)</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
