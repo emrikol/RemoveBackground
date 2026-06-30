@@ -87,7 +87,7 @@ cat > "$STAGE/Contents/Info.plist" <<PLIST
   <key>CFBundleIconFile</key><string>main</string>
   <key>SUFeedURL</key><string>https://emrikol.github.io/RemoveBackground/appcast.xml</string>
   <key>SUPublicEDKey</key><string>RrIa9Qh/+LN89ANE5QLzxKzya+RW9RQDTkKbS0wRWkI=</string>
-  <key>SUEnableAutomaticChecks</key><false/>
+  <key>SUEnableAutomaticChecks</key><true/>
 </dict></plist>
 PLIST
 printf 'APPL????' > "$STAGE/Contents/PkgInfo"
