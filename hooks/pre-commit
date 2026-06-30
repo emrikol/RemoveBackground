@@ -1,12 +1,24 @@
 #!/bin/bash
-# Pre-commit: enforce SwiftFormat + SwiftLint on the app sources.
+# Pre-commit: guard the prebuilt app icon, then enforce SwiftFormat + SwiftLint.
 # Install with: ./scripts/install-hooks.sh
 set -e
 ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT"
 
-# Only run when Swift files are staged.
-if ! git diff --cached --name-only --diff-filter=ACM | grep -q '\.swift$'; then
+staged() { git diff --cached --name-only --diff-filter=ACM; }
+
+# Icon drift: the shipped icon is a pre-compiled RBGApp/AppIcon/Assets.car (CI can't run
+# Xcode 26's actool). If main.icon changed but AppIcon/ didn't, the released icon goes
+# stale — require regenerating it.
+if staged | grep -q '^main\.icon/' && ! staged | grep -q '^RBGApp/AppIcon/'; then
+    echo "❌ main.icon changed but RBGApp/AppIcon/ wasn't updated."
+    echo "   Run: ./tools/compile-icon.sh   (needs Xcode 26)"
+    echo "   then: git add RBGApp/AppIcon && re-commit."
+    exit 1
+fi
+
+# SwiftFormat + SwiftLint — only when Swift files are staged.
+if ! staged | grep -q '\.swift$'; then
     exit 0
 fi
 
