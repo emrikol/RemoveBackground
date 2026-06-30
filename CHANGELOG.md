@@ -7,6 +7,8 @@ All notable changes to Remove Background are documented here. The format follows
 ## [Unreleased]
 
 ### Added
+- **Auto-update via Sparkle 2** — a "Check for Updates…" menu item; the framework is
+  embedded and Developer-ID signable. (Appcast hosting + CI release pipeline to follow.)
 - Batch processing: drop/open many images into a queue with a thumbnail strip
   (per-item status badges), **Process All** (sequential), and **Export All** to a folder.
 - Zoom & inspect the cut-out — pinch / +− / double-click (1–6×), pan, Fit-to-window.

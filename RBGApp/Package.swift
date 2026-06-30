@@ -15,12 +15,14 @@ let package = Package(
     platforms: [.macOS(.v14)],
     dependencies: [
         .package(url: "https://github.com/microsoft/onnxruntime-swift-package-manager", from: "1.19.0"),
+        .package(url: "https://github.com/sparkle-project/Sparkle", from: "2.7.0"),
     ],
     targets: [
         .executableTarget(
             name: "RemoveBackground",
             dependencies: [
                 .product(name: "onnxruntime", package: "onnxruntime-swift-package-manager"),
+                .product(name: "Sparkle", package: "Sparkle"),
             ],
             path: "Sources/RemoveBackground",
             swiftSettings: sizeOptimization

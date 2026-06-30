@@ -37,8 +37,17 @@ swift build -c release
 BIN=".build/release/$APP"   # SwiftPM's stable release output path
 
 echo "→ assembling ${STAGE}…"
-rm -rf "$STAGE"; mkdir -p "$MACOS" "$RES"
+rm -rf "$STAGE"; mkdir -p "$MACOS" "$RES" "$STAGE/Contents/Frameworks"
 cp "$BIN" "$MACOS/$APP"
+
+# Embed Sparkle.framework (built by SwiftPM) so the app can auto-update.
+if [ -d ".build/release/Sparkle.framework" ]; then
+  echo "→ embedding Sparkle.framework…"
+  cp -R ".build/release/Sparkle.framework" "$STAGE/Contents/Frameworks/"
+  install_name_tool -add_rpath "@executable_path/../Frameworks" "$MACOS/$APP" 2>/dev/null || true
+else
+  echo "   ⚠ .build/release/Sparkle.framework not found — auto-update unavailable"
+fi
 
 # App icon: compile the Icon Composer document (Liquid Glass) with actool →
 # Assets.car (modern) + main.icns (legacy fallback). Skipped gracefully if absent.
@@ -74,6 +83,9 @@ cat > "$STAGE/Contents/Info.plist" <<PLIST
   <key>LSApplicationCategoryType</key><string>public.app-category.photography</string>
   <key>CFBundleIconName</key><string>main</string>
   <key>CFBundleIconFile</key><string>main</string>
+  <key>SUFeedURL</key><string>https://emrikol.github.io/RemoveBackground/appcast.xml</string>
+  <key>SUPublicEDKey</key><string>RrIa9Qh/+LN89ANE5QLzxKzya+RW9RQDTkKbS0wRWkI=</string>
+  <key>SUEnableAutomaticChecks</key><false/>
 </dict></plist>
 PLIST
 printf 'APPL????' > "$STAGE/Contents/PkgInfo"
@@ -81,10 +93,10 @@ printf 'APPL????' > "$STAGE/Contents/PkgInfo"
 if [ "$MODE" = "release" ]; then
   [ -n "$SIGN_IDENTITY" ] || { echo "✗ no 'Developer ID Application' identity found in keychain" >&2; exit 1; }
   echo "→ signing with Developer ID (hardened runtime)…"
-  # No nested frameworks today (onnxruntime is statically linked), so one signature over
-  # the bundle suffices. When Sparkle is added, switch to inside-out signing of
-  # Sparkle.framework + its XPC services first — never use --deep with --identifier.
-  codesign --force --options runtime --timestamp --sign "$SIGN_IDENTITY" "$STAGE" 2>&1 | sed 's/^/   /'
+  # --deep signs the embedded Sparkle.framework + its nested XPC services too. Never add
+  # --identifier with --deep: it would overwrite the XPC bundle identifiers and break
+  # auto-updates (Sparkle's Installer XPC needs its own identifier).
+  codesign --force --deep --options runtime --timestamp --sign "$SIGN_IDENTITY" "$STAGE" 2>&1 | sed 's/^/   /'
 else
   echo "→ ad-hoc code-signing (dev)…"
   codesign --force --deep --sign - "$STAGE" 2>&1 | sed 's/^/   /' || true

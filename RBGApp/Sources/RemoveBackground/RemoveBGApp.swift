@@ -13,6 +13,7 @@ struct RemoveBGApp: App {
     #endif
     /// Owned here so the menu bar and the window share one model.
     @StateObject private var model = AppModel()
+    @StateObject private var updater = UpdaterViewModel()
 
     var body: some Scene {
         WindowGroup("Remove Background") {
@@ -21,7 +22,12 @@ struct RemoveBGApp: App {
         }
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
-        .commands { AppCommands(model: model) }
+        .commands {
+            AppCommands(model: model)
+            CommandGroup(after: .appInfo) {
+                CheckForUpdatesView(updater: updater)
+            }
+        }
     }
 }
 
