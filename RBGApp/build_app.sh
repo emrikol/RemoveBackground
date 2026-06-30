@@ -27,9 +27,9 @@ done
 SIGN_IDENTITY="${SIGN_IDENTITY:-$(security find-identity -v -p codesigning 2>/dev/null \
   | grep "Developer ID Application" | head -1 | sed -E 's/.*"(.*)".*/\1/')}"
 
-# Version for both Info.plist keys. CI passes the release tag (e.g. VERSION=1.0.1).
+# Version for both Info.plist keys. CI passes the release tag (e.g. VERSION=0.1.1).
 # Sparkle compares CFBundleVersion, so it must increase every release.
-VERSION="${VERSION:-1.0.0}"
+VERSION="${VERSION:-0.1.0}"
 
 APP="RemoveBackground"
 STAGE="build/$APP.app"

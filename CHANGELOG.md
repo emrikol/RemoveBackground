@@ -6,7 +6,7 @@ All notable changes to Remove Background are documented here. The format follows
 
 ## [Unreleased]
 
-## [1.0.0] - 2026-06-30
+## [0.1.0] - 2026-06-30
 
 ### Added
 - **Auto-update via Sparkle 2** — a "Check for Updates…" menu item; the framework is
