@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 
 import CoreML
+import CryptoKit
 import Foundation
 
 enum Engine { case coreml, ort }
@@ -36,6 +37,11 @@ struct ModelSpec: Identifiable, Hashable {
     /// Ignored for the Core ML engine.
     let usesCoreMLEP: Bool
 
+    /// Expected SHA-256 of the primary downloaded file — the `.onnx` for ORT models, or the
+    /// Core ML package's `weight.bin`. Verified after download; nil skips the check. Paired
+    /// with the pinned commit SHA in the URLs, so the model content is both immutable and verified.
+    let sha256: String?
+
     static func == (a: ModelSpec, b: ModelSpec) -> Bool {
         a.id == b.id
     }
@@ -57,7 +63,8 @@ enum Models {
             blurb: "Balanced and BRIA-trained — excellent all-round quality, on the GPU in seconds.",
             license: "CC-BY-NC-4.0 (non-commercial)",
             engine: .coreml,
-            coremlBaseURL: "https://huggingface.co/VincentGOURBIN/RMBG-2-CoreML/resolve/main/RMBG-2-native.mlpackage",
+            // Pinned to an immutable commit SHA so a re-pointed `main` can't swap the model.
+            coremlBaseURL: "https://huggingface.co/VincentGOURBIN/RMBG-2-CoreML/resolve/0da071b52c402b293c8b13af9148bac21b4a8456/RMBG-2-native.mlpackage",
             coremlFiles: [
                 "Manifest.json",
                 "Data/com.apple.CoreML/model.mlmodel",
@@ -66,7 +73,8 @@ enum Models {
             coremlOutputName: "output_3",
             downloadURL: nil, fileName: nil,
             approxMB: 461,
-            inputSize: 1024, applySigmoid: false, usesCoreMLEP: true
+            inputSize: 1024, applySigmoid: false, usesCoreMLEP: true,
+            sha256: "2efd4c12d4a106d9e1b02703d7848cb1d6fd4c2ffb5cf2631065bf4e0271c823"
         ),
         ModelSpec(
             id: "birefnet",
@@ -75,10 +83,11 @@ enum Models {
             license: "MIT",
             engine: .ort,
             coremlBaseURL: nil, coremlFiles: [], coremlOutputName: nil,
-            downloadURL: URL(string: "https://huggingface.co/onnx-community/BiRefNet-ONNX/resolve/main/onnx/model_fp16.onnx"),
+            downloadURL: URL(string: "https://huggingface.co/onnx-community/BiRefNet-ONNX/resolve/534d3c82d3bb8b2f0867db6dfbc3a525b8e42f67/onnx/model_fp16.onnx"),
             fileName: "birefnet_fp16.onnx",
             approxMB: 467,
-            inputSize: 1024, applySigmoid: true, usesCoreMLEP: true
+            inputSize: 1024, applySigmoid: true, usesCoreMLEP: true,
+            sha256: "3654c741eb80bd926ada8fed1713b506ccf8d30eb1f6487e87eb9f234f33df09"
         ),
         ModelSpec(
             id: "birefnet_lite",
@@ -87,10 +96,11 @@ enum Models {
             license: "MIT",
             engine: .ort,
             coremlBaseURL: nil, coremlFiles: [], coremlOutputName: nil,
-            downloadURL: URL(string: "https://huggingface.co/onnx-community/BiRefNet_lite-ONNX/resolve/main/onnx/model_fp16.onnx"),
+            downloadURL: URL(string: "https://huggingface.co/onnx-community/BiRefNet_lite-ONNX/resolve/de15b22ba131738a16dff04aab8bdf8dc32e3ac1/onnx/model_fp16.onnx"),
             fileName: "birefnet_lite_fp16.onnx",
             approxMB: 109,
-            inputSize: 1024, applySigmoid: true, usesCoreMLEP: true
+            inputSize: 1024, applySigmoid: true, usesCoreMLEP: true,
+            sha256: "d39b897ceb16ae654c1731f3dba0cf9b368d9cae74b5a57459b455cc8bfec402"
         ),
         ModelSpec(
             id: "birefnet_portrait",
@@ -99,10 +109,11 @@ enum Models {
             license: "MIT",
             engine: .ort,
             coremlBaseURL: nil, coremlFiles: [], coremlOutputName: nil,
-            downloadURL: URL(string: "https://huggingface.co/onnx-community/BiRefNet-portrait-ONNX/resolve/main/onnx/model_fp16.onnx"),
+            downloadURL: URL(string: "https://huggingface.co/onnx-community/BiRefNet-portrait-ONNX/resolve/dd7167f6a8b54ff7efc29a4c988938d79866464f/onnx/model_fp16.onnx"),
             fileName: "birefnet_portrait_fp16.onnx",
             approxMB: 467,
-            inputSize: 1024, applySigmoid: true, usesCoreMLEP: true
+            inputSize: 1024, applySigmoid: true, usesCoreMLEP: true,
+            sha256: "4c05930c0b6f1418d02eb1de81c46fe37638ba54f5a93adeb5c674521db10110"
         ),
         ModelSpec(
             id: "birefnet_matting",
@@ -111,10 +122,11 @@ enum Models {
             license: "MIT",
             engine: .ort,
             coremlBaseURL: nil, coremlFiles: [], coremlOutputName: nil,
-            downloadURL: URL(string: "https://huggingface.co/emrikol/birefnet-matting-onnx/resolve/main/birefnet-matting.onnx"),
+            downloadURL: URL(string: "https://huggingface.co/emrikol/birefnet-matting-onnx/resolve/0d58d809b3a360b44c556223d2f5812aeace9ba3/birefnet-matting.onnx"),
             fileName: "birefnet-matting.onnx",
             approxMB: 897,
-            inputSize: 1024, applySigmoid: true, usesCoreMLEP: false
+            inputSize: 1024, applySigmoid: true, usesCoreMLEP: false,
+            sha256: "f0843e38f6a4e88efc8c5fad4178ad7ed6c818346ce12f82e7b579324fe7e0c5"
         ),
     ]
 
@@ -153,13 +165,31 @@ enum ModelStore {
         }
     }
 
-    /// Ensures the ORT `.onnx` is present (downloading once), returns its path.
+    /// Verifies a freshly downloaded file against its pinned SHA-256, deleting it and throwing
+    /// on mismatch. No-op when `expected` is nil. The file is memory-mapped so a multi-hundred-MB
+    /// model is hashed without being loaded into RAM.
+    static func verify(_ url: URL, expected: String?, name: String) throws {
+        guard let expected else { return }
+        guard let data = try? Data(contentsOf: url, options: .mappedIfSafe) else {
+            throw NSError(domain: "ModelStore", code: 11,
+                          userInfo: [NSLocalizedDescriptionKey: "Couldn’t read \(name) to verify it."])
+        }
+        let actual = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+        guard actual == expected.lowercased() else {
+            try? FileManager.default.removeItem(at: url)
+            throw NSError(domain: "ModelStore", code: 12, userInfo: [NSLocalizedDescriptionKey:
+                "Integrity check failed for \(name) — its checksum didn’t match the pinned value, so the download was discarded."])
+        }
+    }
+
+    /// Ensures the ORT `.onnx` is present (downloading + verifying once), returns its path.
     static func ensure(_ spec: ModelSpec, progress: @escaping (Double) -> Void) async throws -> URL {
         guard let dest = localURL(for: spec), let url = spec.downloadURL else {
             throw NSError(domain: "ModelStore", code: 1, userInfo: [NSLocalizedDescriptionKey: "no download for \(spec.id)"])
         }
         if FileManager.default.fileExists(atPath: dest.path) { return dest }
         let tmp = try await Downloader.shared.download(url, progress: progress)
+        try verify(tmp, expected: spec.sha256, name: spec.fileName ?? spec.id)
         try? FileManager.default.removeItem(at: dest)
         try FileManager.default.moveItem(at: tmp, to: dest)
         progress(1.0)
@@ -192,6 +222,9 @@ enum ModelStore {
             try FileManager.default.moveItem(at: tmp, to: dest)
         }
 
+        // Verify the package's bulk weights against the pinned hash before compiling it.
+        try verify(pkg.appendingPathComponent("Data/com.apple.CoreML/weights/weight.bin"),
+                   expected: spec.sha256, name: "\(spec.id) weights")
         let tmpCompiled = try await MLModel.compileModel(at: pkg)
         try? FileManager.default.removeItem(at: compiled)
         try FileManager.default.moveItem(at: tmpCompiled, to: compiled)
