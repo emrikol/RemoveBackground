@@ -2,6 +2,31 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+# Build modes:
+#   (no flags)  ad-hoc sign — for local development
+#   --release   sign with a Developer ID + hardened runtime (notarization-ready)
+#   --notarize  also submit to Apple's notary service + staple (implies --release)
+MODE="adhoc"
+NOTARIZE=0
+for arg in "$@"; do
+  case "$arg" in
+    --release) MODE="release" ;;
+    --notarize) MODE="release"; NOTARIZE=1 ;;
+    -h|--help)
+      echo "usage: $0 [--release] [--notarize]"
+      echo "  (no flags)  ad-hoc sign (local dev)"
+      echo "  --release   Developer ID + hardened runtime"
+      echo "  --notarize  submit to Apple notary + staple (implies --release)"
+      exit 0 ;;
+    *) echo "unknown option: $arg" >&2; exit 1 ;;
+  esac
+done
+
+# Developer ID identity is auto-detected from the keychain so this (anonymized) repo
+# never hardcodes a real name. Override explicitly with: SIGN_IDENTITY="…" ./build_app.sh
+SIGN_IDENTITY="${SIGN_IDENTITY:-$(security find-identity -v -p codesigning 2>/dev/null \
+  | grep "Developer ID Application" | head -1 | sed -E 's/.*"(.*)".*/\1/')}"
+
 APP="RemoveBackground"
 STAGE="build/$APP.app"
 MACOS="$STAGE/Contents/MacOS"
@@ -53,13 +78,38 @@ cat > "$STAGE/Contents/Info.plist" <<PLIST
 PLIST
 printf 'APPL????' > "$STAGE/Contents/PkgInfo"
 
-echo "→ ad-hoc code-signing…"
-codesign --force --deep --sign - "$STAGE" 2>&1 | sed 's/^/   /' || true
+if [ "$MODE" = "release" ]; then
+  [ -n "$SIGN_IDENTITY" ] || { echo "✗ no 'Developer ID Application' identity found in keychain" >&2; exit 1; }
+  echo "→ signing with Developer ID (hardened runtime)…"
+  # No nested frameworks today (onnxruntime is statically linked), so one signature over
+  # the bundle suffices. When Sparkle is added, switch to inside-out signing of
+  # Sparkle.framework + its XPC services first — never use --deep with --identifier.
+  codesign --force --options runtime --timestamp --sign "$SIGN_IDENTITY" "$STAGE" 2>&1 | sed 's/^/   /'
+else
+  echo "→ ad-hoc code-signing (dev)…"
+  codesign --force --deep --sign - "$STAGE" 2>&1 | sed 's/^/   /' || true
+fi
+
+if [ "$NOTARIZE" = "1" ]; then
+  echo "→ notarizing (xcrun notarytool, keychain profile 'notarytool')…"
+  ZIP="build/$APP-notarize.zip"
+  rm -f "$ZIP"
+  /usr/bin/ditto -c -k --keepParent "$STAGE" "$ZIP"
+  xcrun notarytool submit "$ZIP" --keychain-profile "notarytool" --wait 2>&1 | tee build/notarize.log | sed 's/^/   /'
+  if grep -q "status: Accepted" build/notarize.log; then
+    echo "→ stapling + verifying…"
+    xcrun stapler staple "$STAGE"
+    spctl -a -vv "$STAGE" 2>&1 | sed 's/^/   /' || true
+  else
+    echo "   ⚠ notarization not Accepted — see build/notarize.log (not stapling)"
+  fi
+  rm -f "$ZIP"
+fi
 
 # Install single canonical copy to ~/Applications (move, don't copy → no duplicate)
 INSTALL="$HOME/Applications/$APP.app"
 pkill -x "$APP" 2>/dev/null || true
 rm -rf "$INSTALL"; mkdir -p "$HOME/Applications"
 mv "$STAGE" "$INSTALL"
-echo "✓ installed $INSTALL"
+echo "✓ installed $INSTALL  (mode: $MODE$([ "$NOTARIZE" = 1 ] && echo ", notarized"))"
 du -sh "$INSTALL"
