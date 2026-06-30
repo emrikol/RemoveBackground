@@ -194,7 +194,7 @@ final class AppModel: ObservableObject {
     }
 
     /// Turns a raw engine/network error into a short, human, non-scary message.
-    private func friendlyError(_ error: Error) -> String {
+    func friendlyError(_ error: Error) -> String {
         if (error as NSError).domain == NSURLErrorDomain {
             return "Download failed — check your connection and Run Again."
         }

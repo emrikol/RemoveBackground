@@ -27,5 +27,10 @@ let package = Package(
             path: "Sources/RemoveBackground",
             swiftSettings: sizeOptimization
         ),
+        .testTarget(
+            name: "RemoveBackgroundTests",
+            dependencies: ["RemoveBackground"],
+            path: "Tests"
+        ),
     ]
 )
