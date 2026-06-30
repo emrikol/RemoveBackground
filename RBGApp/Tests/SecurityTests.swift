@@ -30,4 +30,15 @@ final class SecurityTests: XCTestCase {
             XCTAssertFalse(url.contains("/resolve/main/"), "\(m.id) must pin a commit SHA, not a mutable branch")
         }
     }
+
+    /// The output-shape bounds check rejects a model that lies about its output size (the OOB /
+    /// huge-allocation guard) and accepts legitimate fp16/fp32 masks.
+    func testMaskBoundsValidation() {
+        XCTAssertEqual(validatedMaskBPE(side: 1024, byteCount: 1024 * 1024 * 4), 4, "valid fp32")
+        XCTAssertEqual(validatedMaskBPE(side: 1024, byteCount: 1024 * 1024 * 2), 2, "valid fp16")
+        XCTAssertNil(validatedMaskBPE(side: 1024, byteCount: 8), "tiny buffer vs huge declared side → reject")
+        XCTAssertNil(validatedMaskBPE(side: 0, byteCount: 0), "zero side → reject")
+        XCTAssertNil(validatedMaskBPE(side: 100_000, byteCount: 16), "absurd side → reject (no huge alloc)")
+        XCTAssertNil(validatedMaskBPE(side: 1024, byteCount: 1024 * 1024 * 3), "non-2/4 element size → reject")
+    }
 }

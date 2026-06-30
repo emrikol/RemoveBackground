@@ -124,6 +124,19 @@ func sigmoidF(_ x: Float) -> Float {
     1 / (1 + expf(-x))
 }
 
+/// Validates an *untrusted* model output's declared `side` against the actual data size,
+/// returning the bytes-per-element (2 = fp16, 4 = fp32) only if the data is exactly `side*side`
+/// such values and `side` is within bounds. Returns nil otherwise — this guards against an
+/// out-of-bounds read or a huge allocation from a malicious or broken model that lies about its
+/// output shape.
+func validatedMaskBPE(side: Int, byteCount: Int, maxSide: Int = 8192) -> Int? {
+    guard side > 0, side <= maxSide else { return nil }
+    let count = side * side
+    if byteCount == count * 4 { return 4 }
+    if byteCount == count * 2 { return 2 }
+    return nil
+}
+
 func writePNG(_ image: CGImage, to url: URL) throws {
     guard let dest = CGImageDestinationCreateWithURL(url as CFURL, UTType.png.identifier as CFString, 1, nil) else {
         throw NSError(domain: "png", code: 1)
@@ -184,7 +197,10 @@ final class CoreMLSegmenter: Segmenter, @unchecked Sendable {
         guard let out = pred.featureValue(for: spec.coremlOutputName ?? "output_3")?.multiArrayValue else {
             throw SegError.noModelOutput
         }
+        // Don't trust the model's declared output shape — bound the side and require enough elements.
+        guard out.shape.count >= 3 else { throw SegError.noModelOutput }
         let side = out.shape[2].intValue
+        guard side > 0, side <= 8192, out.count >= side * side else { throw SegError.noModelOutput }
         let count = side * side
         var mask = [UInt8](repeating: 0, count: count)
         if out.dataType == .float16 {
@@ -260,10 +276,12 @@ final class ORTSegmenter: Segmenter, @unchecked Sendable {
         guard let val = outs[outputName] else { throw SegError.noModelOutput }
         let info = try val.tensorTypeAndShapeInfo()
         let shape = info.shape.map(\.intValue)
-        let side = shape[shape.count - 1]
-        let count = side * side
         let bytes = try val.tensorData() as Data
-        let bpe = bytes.count / max(count, 1)
+        // Don't trust the model's declared shape — validate it against the actual data size.
+        guard let side = shape.last, let bpe = validatedMaskBPE(side: side, byteCount: bytes.count) else {
+            throw SegError.noModelOutput
+        }
+        let count = side * side
         var mask = [UInt8](repeating: 0, count: count)
         bytes.withUnsafeBytes { (p: UnsafeRawBufferPointer) in
             if bpe == 4 {
