@@ -81,4 +81,20 @@ final class AppModelTests: XCTestCase {
         let other = NSError(domain: "RBG", code: 1)
         XCTAssertTrue(m.friendlyError(other).contains("Run Again to retry"))
     }
+
+    func testRemoveItemKeepsSelectionAndFallsBackToEmpty() {
+        let m = AppModel()
+        m.load([img(), img(), img()])
+        m.selectItem(2)
+        m.removeItem(0) // removing before the selected shifts it down
+        XCTAssertEqual(m.items.count, 2)
+        XCTAssertEqual(m.selectedIndex, 1)
+        m.removeItem(1) // remove the selected (last) → clamps
+        XCTAssertEqual(m.items.count, 1)
+        XCTAssertEqual(m.selectedIndex, 0)
+        XCTAssertFalse(m.isBatch)
+        m.removeItem(0) // remove the last → empty state
+        XCTAssertTrue(m.items.isEmpty)
+        XCTAssertNil(m.inputImage)
+    }
 }

@@ -138,6 +138,20 @@ struct ContentView: View {
                 ForEach(Array(model.items.enumerated()), id: \.element.id) { i, item in
                     Button { model.selectItem(i) } label: { thumb(item, index: i) }
                         .buttonStyle(.plain)
+                        .overlay(alignment: .topTrailing) {
+                            if !model.isBusy {
+                                Button { model.removeItem(i) } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .font(.system(size: 17))
+                                        .foregroundStyle(.white, .black.opacity(0.6))
+                                        .shadow(color: .black.opacity(0.35), radius: 1, y: 0.5)
+                                }
+                                .buttonStyle(.plain)
+                                .padding(2)
+                                .help("Remove from queue")
+                                .accessibilityLabel("Remove image \(i + 1) from the queue")
+                            }
+                        }
                 }
             }
             .padding(.horizontal, 20).padding(.vertical, 3)

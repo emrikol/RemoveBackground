@@ -120,6 +120,26 @@ final class AppModel: ObservableObject {
         errorDetail = items[i].state == .failed ? items[i].error : ""
     }
 
+    /// Removes one image from the queue, keeping the selection sensible (and returning to the
+    /// empty state if it was the last one). Disabled while a batch is processing.
+    func removeItem(_ i: Int) {
+        guard items.indices.contains(i), !isBusy else { return }
+        let removedSelected = i == selectedIndex
+        items.remove(at: i)
+        if items.isEmpty {
+            selectedIndex = 0; wipe = 0.5; errorDetail = ""
+            status = "Drop an image to begin."
+            return
+        }
+        if i < selectedIndex { selectedIndex -= 1 }
+        selectedIndex = min(selectedIndex, items.count - 1)
+        if removedSelected {
+            wipe = 0.5
+            errorDetail = items[selectedIndex].state == .failed ? items[selectedIndex].error : ""
+        }
+        status = isBatch ? "\(items.count) images · \(pendingCount) to process" : "Ready. Click “Remove Background”."
+    }
+
     private func ensureEngine(_ spec: ModelSpec) async throws -> Segmenter {
         if let e = engines[spec.id] { return e }
         if spec.engine == .ort {
