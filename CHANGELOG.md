@@ -6,6 +6,10 @@ All notable changes to Remove Background are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+- The whole window no longer subtly "breathes" (drifts up and down a few pixels) on launch —
+  the empty-state hero's floating animation interacted with the content-sized window.
+
 ## [0.2.0] - 2026-06-30
 
 ### Security

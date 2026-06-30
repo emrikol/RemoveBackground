@@ -183,8 +183,6 @@ struct Swatch: View {
 /// app icon and the core action, with a gentle idle float.
 struct WipeHeroMark: View {
     var size: CGFloat = 112
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var float = false
 
     var body: some View {
         ZStack {
@@ -203,11 +201,6 @@ struct WipeHeroMark: View {
                 .shadow(color: .black.opacity(0.18), radius: 4, y: 1)
         }
         .shadow(color: .black.opacity(0.18), radius: 16, y: 7)
-        .offset(y: float ? -5 : 0)
-        .onAppear {
-            guard !reduceMotion else { return }
-            withAnimation(.easeInOut(duration: 2.6).repeatForever(autoreverses: true)) { float = true }
-        }
         .accessibilityHidden(true)
     }
 }
