@@ -86,3 +86,14 @@ Silicon + macOS — supporting every hardware/OS combination is beyond its scope
 - Use a **different project name and branding** to avoid confusion.
 - You must comply with the **PolyForm Noncommercial** terms (non-commercial use only).
 - Mind the model licenses too — the default RMBG-2.0 model is **CC BY-NC 4.0**.
+
+## Disclaimer
+
+**This software is provided "AS IS", without warranty of any kind**, express or implied,
+including but not limited to the warranties of merchantability, fitness for a particular
+purpose, and non-infringement. **You use it entirely at your own risk.**
+
+To the maximum extent permitted by law, **in no event shall the author be liable for any
+claim, damage, data loss, or other liability** — whether in an action of contract, tort,
+or otherwise — arising from, out of, or in connection with this software or its use. There
+is **no support of any kind**. See the [LICENSE](LICENSE) for the full terms.
