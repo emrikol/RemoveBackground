@@ -212,9 +212,6 @@ struct ContentView: View {
                 // matted by the surrounding card. Pinch / +- to zoom, drag to pan when zoomed.
                 BeforeAfterWipe(original: input, cutout: model.outputImage, fraction: $model.wipe,
                                 busy: model.isBusy, backdrop: model.backdrop, zoom: zoomLevel, pan: $pan)
-                    .aspectRatio(input.size.width / max(input.size.height, 1), contentMode: .fit)
-                    .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Theme.hairline, lineWidth: 1)) // viewport frame
-                    .shadow(color: .black.opacity(0.12), radius: 12, y: 5)
                     .padding(18)
                     .gesture(MagnifyGesture()
                         .updating($pinch) { v, s, _ in s = v.magnification }

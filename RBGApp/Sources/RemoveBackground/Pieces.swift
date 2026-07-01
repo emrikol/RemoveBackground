@@ -224,25 +224,34 @@ struct BeforeAfterWipe: View {
     var body: some View {
         GeometryReader { geo in
             let w = geo.size.width, h = geo.size.height
+            // The image aspect-fits the whole card; zooming grows it into that full area (clipped
+            // to the card), while the seam + handle stay in screen space at the image's fraction.
+            let ar = original.size.width / max(original.size.height, 1)
+            let fitW = min(w, h * ar), fitH = min(h, w / ar)
+            let minX = (w - fitW) / 2
+            let seamX = minX + fitW * fraction
+            let off: CGSize = zoom > 1.01 ? pan : .zero
             ZStack(alignment: .topLeading) {
-                Image(nsImage: original).resizable().scaledToFit()
+                Image(nsImage: original).resizable()
+                    .aspectRatio(ar, contentMode: .fit)
+                    .scaleEffect(zoom).offset(off)
                     .frame(width: w, height: h)
-                    .scaleEffect(zoom).offset(zoom > 1.01 ? pan : .zero)
                     .accessibilityLabel("Original image")
 
                 if let cutout {
                     ZStack {
-                        backdrop.view // the new background stays screen-space (fills the reveal)
-                        Image(nsImage: cutout).resizable().scaledToFit()
-                            .scaleEffect(zoom).offset(zoom > 1.01 ? pan : .zero)
+                        backdrop.view
+                        Image(nsImage: cutout).resizable()
                     }
+                    .aspectRatio(ar, contentMode: .fit) // constrain the backdrop to the image, not the letterbox
+                    .scaleEffect(zoom).offset(off)
                     .frame(width: w, height: h)
-                    .mask(alignment: .trailing) { Rectangle().frame(width: max(0, w * (1 - fraction))) }
+                    .mask(alignment: .trailing) { Rectangle().frame(width: max(0, w - seamX)) }
                     .accessibilityLabel("Cut-out with the background removed")
 
                     cornerLabel("ORIGINAL", alignment: .topLeading).opacity(fraction > 0.06 ? 1 : 0)
                     cornerLabel("CUT-OUT", alignment: .topTrailing).opacity(fraction < 0.94 ? 1 : 0)
-                    handle(w: w, h: h)
+                    handle(x: seamX, h: h, lineHeight: min(fitH * zoom, h))
                 }
 
                 if busy { ScanShimmer() }
@@ -260,14 +269,14 @@ struct BeforeAfterWipe: View {
                 .updating($isDragging) { _, s, _ in s = true }
                 .onChanged { v in
                     if dragMode == nil {
-                        let onSeam = abs(v.startLocation.x - w * fraction) <= 26
+                        let onSeam = abs(v.startLocation.x - seamX) <= 26
                         if onSeam || zoom <= 1.01 { dragMode = .wipe } else { dragMode = .pan; panStart = pan }
                     }
                     switch dragMode {
                     case .wipe:
-                        fraction = min(max(v.location.x / w, 0), 1)
+                        fraction = min(max((v.location.x - minX) / fitW, 0), 1)
                     case .pan:
-                        let lx = (zoom - 1) * w / 2, ly = (zoom - 1) * h / 2
+                        let lx = (zoom - 1) * fitW / 2, ly = (zoom - 1) * fitH / 2
                         pan = CGSize(width: min(max(panStart.width + v.translation.width, -lx), lx),
                                      height: min(max(panStart.height + v.translation.height, -ly), ly))
                     case .none: break
@@ -305,11 +314,11 @@ struct BeforeAfterWipe: View {
             .allowsHitTesting(false)
     }
 
-    private func handle(w: CGFloat, h: CGFloat) -> some View {
-        let x = w * fraction // screen-space — outside the image's zoom, so it stays a constant size
+    /// Screen-space — outside the image's zoom — so the seam + handle stay a constant size.
+    private func handle(x: CGFloat, h: CGFloat, lineHeight: CGFloat) -> some View {
         let wiping = isDragging && dragMode == .wipe
         return ZStack {
-            Rectangle().fill(.white).frame(width: 2.5, height: h)
+            Rectangle().fill(.white).frame(width: 2.5, height: lineHeight)
             Circle().fill(.white).frame(width: 32, height: 32)
                 .overlay(Image(systemName: "arrow.left.and.right").sFont(12, .bold)
                     .foregroundStyle(Theme.ink))
