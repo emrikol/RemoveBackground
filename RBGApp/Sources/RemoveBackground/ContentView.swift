@@ -212,7 +212,6 @@ struct ContentView: View {
                 // matted by the surrounding card. Pinch / +- to zoom, drag to pan when zoomed.
                 BeforeAfterWipe(original: input, cutout: model.outputImage, fraction: $model.wipe,
                                 busy: model.isBusy, backdrop: model.backdrop, zoom: zoomLevel, pan: $pan)
-                    .padding(18)
                     .gesture(MagnifyGesture()
                         .updating($pinch) { v, s, _ in s = v.magnification }
                         .onEnded { v in zoom = min(max(zoom * v.magnification, 1), 6); if zoom <= 1.01 { zoom = 1; pan = .zero } })

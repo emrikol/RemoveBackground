@@ -259,8 +259,15 @@ struct BeforeAfterWipe: View {
             .clipShape(RoundedRectangle(cornerRadius: 14))
             .contentShape(Rectangle())
             .onContinuousHover { phase in
-                guard cutout != nil else { return }
-                if case .active = phase { NSCursor.resizeLeftRight.set() } else { NSCursor.arrow.set() }
+                guard cutout != nil else { NSCursor.arrow.set(); return }
+                switch phase {
+                case let .active(p):
+                    // Over the seam → resize (wipe); zoomed and away from it → grab (pan).
+                    if zoom > 1.01, abs(p.x - seamX) > 26 { NSCursor.openHand.set() }
+                    else { NSCursor.resizeLeftRight.set() }
+                case .ended:
+                    NSCursor.arrow.set()
+                }
             }
             // One drag handles both: grab the seam (or drag anywhere when not zoomed) to wipe;
             // otherwise the drag pans the zoomed image. A single gesture means neither blocks the
