@@ -20,7 +20,6 @@ struct ContentView: View {
     @State private var zoom: CGFloat = 1
     @GestureState private var pinch: CGFloat = 1
     @State private var pan: CGSize = .zero
-    @GestureState private var dragPan: CGSize = .zero
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var zoomLevel: CGFloat {
@@ -212,23 +211,14 @@ struct ContentView: View {
                 // Size the wipe to the image's aspect ratio so it sits centered and tight,
                 // matted by the surrounding card. Pinch / +- to zoom, drag to pan when zoomed.
                 BeforeAfterWipe(original: input, cutout: model.outputImage, fraction: $model.wipe,
-                                busy: model.isBusy, backdrop: model.backdrop, interactive: zoomLevel <= 1.01)
+                                busy: model.isBusy, backdrop: model.backdrop, zoom: zoomLevel, pan: $pan)
                     .aspectRatio(input.size.width / max(input.size.height, 1), contentMode: .fit)
-                    .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Theme.hairline, lineWidth: 1)) // print frame
-                    .scaleEffect(zoomLevel)
-                    .offset(x: pan.width + dragPan.width, y: pan.height + dragPan.height)
+                    .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Theme.hairline, lineWidth: 1)) // viewport frame
                     .shadow(color: .black.opacity(0.12), radius: 12, y: 5)
                     .padding(18)
                     .gesture(MagnifyGesture()
                         .updating($pinch) { v, s, _ in s = v.magnification }
                         .onEnded { v in zoom = min(max(zoom * v.magnification, 1), 6); if zoom <= 1.01 { zoom = 1; pan = .zero } })
-                    .simultaneousGesture(zoomLevel > 1.01 ? DragGesture()
-                        .updating($dragPan) { v, s, _ in s = v.translation }
-                        .onEnded { v in
-                            let lim = (zoom - 1) * 420
-                            pan.width = min(max(pan.width + v.translation.width, -lim), lim)
-                            pan.height = min(max(pan.height + v.translation.height, -lim), lim)
-                        } : nil)
                     .onTapGesture(count: 2) { zoom > 1 ? resetZoom() : stepZoom(1.5) }
             }
             if model.isBusy, model.outputImage == nil {

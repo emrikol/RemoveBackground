@@ -212,9 +212,14 @@ struct BeforeAfterWipe: View {
     @Binding var fraction: CGFloat
     let busy: Bool
     var backdrop: Backdrop = .transparent
-    var interactive: Bool = true // false while zoomed (drag pans instead of wipes)
+    var zoom: CGFloat = 1 // applied to the IMAGES only; the seam + handle stay screen-space
+    @Binding var pan: CGSize
     @GestureState private var isDragging = false
     @FocusState private var focused: Bool
+    @State private var dragMode: DragMode?
+    @State private var panStart: CGSize = .zero
+
+    private enum DragMode { case wipe, pan }
 
     var body: some View {
         GeometryReader { geo in
@@ -222,12 +227,14 @@ struct BeforeAfterWipe: View {
             ZStack(alignment: .topLeading) {
                 Image(nsImage: original).resizable().scaledToFit()
                     .frame(width: w, height: h)
+                    .scaleEffect(zoom).offset(zoom > 1.01 ? pan : .zero)
                     .accessibilityLabel("Original image")
 
                 if let cutout {
                     ZStack {
-                        backdrop.view
+                        backdrop.view // the new background stays screen-space (fills the reveal)
                         Image(nsImage: cutout).resizable().scaledToFit()
+                            .scaleEffect(zoom).offset(zoom > 1.01 ? pan : .zero)
                     }
                     .frame(width: w, height: h)
                     .mask(alignment: .trailing) { Rectangle().frame(width: max(0, w * (1 - fraction))) }
@@ -246,9 +253,27 @@ struct BeforeAfterWipe: View {
                 guard cutout != nil else { return }
                 if case .active = phase { NSCursor.resizeLeftRight.set() } else { NSCursor.arrow.set() }
             }
-            .gesture(cutout == nil || !interactive ? nil : DragGesture(minimumDistance: 0)
+            // One drag handles both: grab the seam (or drag anywhere when not zoomed) to wipe;
+            // otherwise the drag pans the zoomed image. A single gesture means neither blocks the
+            // other, so the comparison slider stays usable while zoomed.
+            .gesture(cutout == nil ? nil : DragGesture(minimumDistance: 0)
                 .updating($isDragging) { _, s, _ in s = true }
-                .onChanged { v in fraction = min(max(v.location.x / w, 0), 1) })
+                .onChanged { v in
+                    if dragMode == nil {
+                        let onSeam = abs(v.startLocation.x - w * fraction) <= 26
+                        if onSeam || zoom <= 1.01 { dragMode = .wipe } else { dragMode = .pan; panStart = pan }
+                    }
+                    switch dragMode {
+                    case .wipe:
+                        fraction = min(max(v.location.x / w, 0), 1)
+                    case .pan:
+                        let lx = (zoom - 1) * w / 2, ly = (zoom - 1) * h / 2
+                        pan = CGSize(width: min(max(panStart.width + v.translation.width, -lx), lx),
+                                     height: min(max(panStart.height + v.translation.height, -ly), ly))
+                    case .none: break
+                    }
+                }
+                .onEnded { _ in dragMode = nil })
             // Keyboard: focus the wipe (Tab) and nudge with ←/→.
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.accent, lineWidth: 2.5).opacity(focused ? 1 : 0))
             .focusable(cutout != nil)
@@ -281,15 +306,16 @@ struct BeforeAfterWipe: View {
     }
 
     private func handle(w: CGFloat, h: CGFloat) -> some View {
-        let x = w * fraction
+        let x = w * fraction // screen-space — outside the image's zoom, so it stays a constant size
+        let wiping = isDragging && dragMode == .wipe
         return ZStack {
             Rectangle().fill(.white).frame(width: 2.5, height: h)
             Circle().fill(.white).frame(width: 32, height: 32)
                 .overlay(Image(systemName: "arrow.left.and.right").sFont(12, .bold)
                     .foregroundStyle(Theme.ink))
                 .shadow(color: .black.opacity(0.25), radius: 4, y: 1)
-                .scaleEffect(isDragging ? 1.18 : 1.0)
-                .animation(.spring(response: 0.25, dampingFraction: 0.6), value: isDragging)
+                .scaleEffect(wiping ? 1.18 : 1.0)
+                .animation(.spring(response: 0.25, dampingFraction: 0.6), value: wiping)
         }
         .position(x: x, y: h / 2)
         .allowsHitTesting(false)
