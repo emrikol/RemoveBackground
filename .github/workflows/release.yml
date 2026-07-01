@@ -47,7 +47,9 @@ jobs:
             --password "$NOTARIZATION_PASSWORD"
 
       - name: Build, sign & notarize
-        run: VERSION="${{ steps.version.outputs.version }}" ./RBGApp/build_app.sh --release --notarize
+        # Pin the install dir to ~/Applications — the packaging step below reads it from there,
+        # and build_app.sh otherwise prefers /Applications (writable on the runner).
+        run: INSTALL_DIR="$HOME/Applications" VERSION="${{ steps.version.outputs.version }}" ./RBGApp/build_app.sh --release --notarize
 
       - name: Package ZIP (Sparkle) + DMG (download)
         run: |
