@@ -120,10 +120,15 @@ if [ "$NOTARIZE" = "1" ]; then
   rm -f "$ZIP"
 fi
 
-# Install single canonical copy to ~/Applications (move, don't copy → no duplicate)
-INSTALL="$HOME/Applications/$APP.app"
+# Install a single canonical copy. Prefer /Applications (the standard location so there's no
+# confusing duplicate); fall back to ~/Applications only if it isn't writable, so a normal dev
+# build never needs sudo. Override with INSTALL_DIR=… ./build_app.sh
+if [ -n "${INSTALL_DIR:-}" ]; then DEST="$INSTALL_DIR"
+elif [ -w /Applications ]; then DEST="/Applications"
+else DEST="$HOME/Applications"; fi
+INSTALL="$DEST/$APP.app"
 pkill -x "$APP" 2>/dev/null || true
-rm -rf "$INSTALL"; mkdir -p "$HOME/Applications"
+rm -rf "$INSTALL"; mkdir -p "$DEST"
 mv "$STAGE" "$INSTALL"
 echo "✓ installed $INSTALL  (mode: $MODE$([ "$NOTARIZE" = 1 ] && echo ", notarized"))"
 du -sh "$INSTALL"
