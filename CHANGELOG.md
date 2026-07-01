@@ -6,14 +6,18 @@ All notable changes to Remove Background are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-06-30
+
 ### Added
 - Batch queue: a circular ✕ on each thumbnail to remove a queued image.
 
 ### Fixed
-- The before/after comparison slider now works while zoomed in — drag the handle (or the seam
-  column) to move the comparison; drag elsewhere to pan. Previously a zoom locked the slider.
-- The comparison handle no longer scales up with the zoom; it stays a constant screen size so
-  you can move it to inspect detail beneath it. Only the images zoom and pan now.
+- Reworked zoom and the before/after comparison so they cooperate: only the image zooms and
+  pans (into the full canvas, edge-to-edge), while the comparison seam and handle stay a
+  constant screen size.
+- The comparison slider is now usable while zoomed — drag the handle or seam to compare, drag
+  elsewhere to pan (a grab cursor signals panning). Previously zooming locked the slider and the
+  handle grew with the image.
 
 ## [0.2.1] - 2026-06-30
 
